@@ -6,7 +6,7 @@ import models, schemas, database
 # Khởi tạo app
 app = FastAPI(title="Valuation API", description="API cho Project và Sector", version="1.0")
 
-# Tạo bảng trong DB (nếu chưa có)
+# Tạo bảng trong DB, nếu chưa có 
 models.Base.metadata.create_all(bind=database.engine)
 
 # Hàm tạo session

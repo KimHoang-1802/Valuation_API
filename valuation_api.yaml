@@ -1,0 +1,200 @@
+openapi: 3.0.3
+info:
+  title: Valuation API
+  version: "1.0.0"
+  description: |
+    API định giá cho hai bảng **Project** và **Sector**.
+    Bao gồm các chức năng:
+    - Thêm mới (POST)
+    - Lấy danh sách (GET)
+    - Lấy chi tiết theo ID (GET by ID)
+
+servers:
+  - url: http://localhost:8000
+    description: Local server (FastAPI)
+
+paths:
+  /projects:
+    get:
+      summary: Lấy danh sách tất cả các dự án
+      operationId: getProjects
+      responses:
+        "200":
+          description: Danh sách dự án
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      summary: Tạo mới một dự án
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectCreate"
+      responses:
+        "200":
+          description: Dự án vừa được tạo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{project_id}:
+    get:
+      summary: Lấy thông tin chi tiết của một dự án
+      operationId: getProjectById
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Thông tin dự án
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Không tìm thấy dự án
+
+  /sectors:
+    get:
+      summary: Lấy danh sách tất cả các phân khu (sector)
+      operationId: getSectors
+      responses:
+        "200":
+          description: Danh sách phân khu
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sector"
+    post:
+      summary: Tạo mới một phân khu
+      operationId: createSector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SectorCreate"
+      responses:
+        "200":
+          description: Phân khu vừa được tạo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sector"
+
+  /sectors/{sector_id}:
+    get:
+      summary: Lấy thông tin chi tiết của một phân khu
+      operationId: getSectorById
+      parameters:
+        - name: sector_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Thông tin phân khu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sector"
+        "404":
+          description: Không tìm thấy phân khu
+
+components:
+  schemas:
+    ProjectBase:
+      type: object
+      properties:
+        project_name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        investor:
+          type: string
+          nullable: true
+        num_subzones:
+          type: integer
+          nullable: true
+        num_blocks:
+          type: integer
+          nullable: true
+        num_properties:
+          type: integer
+          nullable: true
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        completion_date:
+          type: string
+          format: date
+          nullable: true
+        area:
+          type: number
+          format: decimal
+          nullable: true
+        land_sheet:
+          type: string
+          nullable: true
+        land_plot:
+          type: string
+          nullable: true
+        alley_faces:
+          type: integer
+          nullable: true
+        frontage_faces:
+          type: integer
+          nullable: true
+    ProjectCreate:
+      allOf:
+        - $ref: "#/components/schemas/ProjectBase"
+    Project:
+      allOf:
+        - $ref: "#/components/schemas/ProjectBase"
+        - type: object
+          properties:
+            project_id:
+              type: integer
+
+    SectorBase:
+      type: object
+      properties:
+        sector_name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        num_building:
+          type: integer
+          nullable: true
+        sector_area:
+          type: number
+          format: decimal
+          nullable: true
+        project_id:
+          type: integer
+    SectorCreate:
+      allOf:
+        - $ref: "#/components/schemas/SectorBase"
+    Sector:
+      allOf:
+        - $ref: "#/components/schemas/SectorBase"
+        - type: object
+          properties:
+            sector_id:
+              type: integer
