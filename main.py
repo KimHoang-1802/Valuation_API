@@ -72,7 +72,7 @@ from typing import List
 
 app = FastAPI(title="Valuation API")
 
-# ✅ Cho phép Swagger Editor trên web gọi đến localhost
+# Cho phép Swagger Editor trên web gọi đến localhost
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # hoặc chỉ ["https://editor.swagger.io"]
@@ -80,6 +80,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from pydantic import BaseModel
 
 class Project(BaseModel):
     project_id: int
@@ -97,6 +99,7 @@ class Project(BaseModel):
     alley_faces: int
     frontage_faces: int
 
+
 fake_projects = [
     Project(
         project_id=1,
@@ -113,6 +116,38 @@ fake_projects = [
         land_plot="P2",
         alley_faces=2,
         frontage_faces=1
+    ),
+    Project(
+        project_id=2,
+        project_name="Vinhomes Central Park",
+        description="Khu đô thị hiện đại với công viên ven sông lớn nhất TP.HCM",
+        investor="Vingroup",
+        num_subzones=5,
+        num_blocks=10,
+        num_properties=3500,
+        start_date="2023-03-15",
+        completion_date="2025-10-01",
+        area=43000.0,
+        land_sheet="B2",
+        land_plot="L5",
+        alley_faces=1,
+        frontage_faces=3
+    ),
+    Project(
+        project_id=3,
+        project_name="Eco Green Saigon",
+        description="Tổ hợp căn hộ xanh chuẩn quốc tế tại Quận 7",
+        investor="Xuan Mai Corp",
+        num_subzones=2,
+        num_blocks=6,
+        num_properties=1200,
+        start_date="2024-06-01",
+        completion_date="2026-09-30",
+        area=20000.0,
+        land_sheet="C3",
+        land_plot="Q7",
+        alley_faces=3,
+        frontage_faces=2
     )
 ]
 
