@@ -151,8 +151,55 @@ fake_projects = [
     )
 ]
 
+class Sector(BaseModel):
+    sector_id: int
+    project_id: int
+    sector_name: str
+    description: str
+    num_building: int
+    sector_area: float
+
+
+# --------------------------------
+# DỮ LIỆU GIẢ LẬP: Sectors
+# --------------------------------
+fake_sectors = [
+    Sector(
+        sector_id=1,
+        project_id=1,
+        sector_name="Sunshine Riverside",
+        description="Phân khu ven sông của dự án Sunshine City",
+        num_building=3,
+        sector_area=3500.75
+    ),
+    Sector(
+        sector_id=2,
+        project_id=2,
+        sector_name="The Landmark",
+        description="Phân khu cao cấp của Vinhomes Central Park",
+        num_building=5,
+        sector_area=10000.50
+    ),
+    Sector(
+        sector_id=3,
+        project_id=3,
+        sector_name="Eco Residence",
+        description="Phân khu xanh của dự án Eco Green Saigon",
+        num_building=4,
+        sector_area=5200.00
+    )
+]
+
+
+@app.get("/projects", response_model=List[Project])
+def get_all_projects():
+    """Lấy danh sách tất cả dự án"""
+    return fake_projects
+
+
 @app.get("/projects/{project_id}", response_model=Project)
 def get_project_by_id(project_id: int):
+    """Lấy thông tin chi tiết của 1 dự án"""
     for project in fake_projects:
         if project.project_id == project_id:
             return project
@@ -160,4 +207,25 @@ def get_project_by_id(project_id: int):
 
 
 
+@app.get("/sectors", response_model=List[Sector])
+def get_all_sectors():
+    """Lấy danh sách tất cả phân khu"""
+    return fake_sectors
 
+
+@app.get("/sectors/{sector_id}", response_model=Sector)
+def get_sector_by_id(sector_id: int):
+    """Lấy chi tiết 1 phân khu"""
+    for sector in fake_sectors:
+        if sector.sector_id == sector_id:
+            return sector
+    return {"detail": "Not Found"}
+
+
+@app.get("/projects/{project_id}/sectors", response_model=List[Sector])
+def get_sectors_by_project(project_id: int):
+    """Lấy danh sách các phân khu thuộc 1 dự án"""
+    sectors = [s for s in fake_sectors if s.project_id == project_id]
+    if not sectors:
+        return {"detail": "No sectors found for this project"}
+    return sectors

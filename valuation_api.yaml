@@ -1,200 +1,270 @@
 openapi: 3.0.3
 info:
   title: Valuation API
-  version: "1.0.0"
+  version: "1.0.4"
   description: |
-    API định giá cho hai bảng **Project** và **Sector**.
-    Bao gồm các chức năng:
-    - Thêm mới (POST)
-    - Lấy danh sách (GET)
-    - Lấy chi tiết theo ID (GET by ID)
+    API tra cứu thông tin định giá bất động sản
 
 servers:
   - url: http://localhost:8000
-    description: Local server (FastAPI)
+    description: Local FastAPI server
 
 paths:
   /projects:
-    get:
-      summary: Lấy danh sách tất cả các dự án
-      operationId: getProjects
-      responses:
-        "200":
-          description: Danh sách dự án
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Project"
     post:
-      summary: Tạo mới một dự án
-      operationId: createProject
+      summary: Tra cứu thông tin dự án
+      description: Nhập tên dự án để tra cứu thông tin và danh sách các phân khu (nếu có)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ProjectCreate"
+              type: object
+              properties:
+                project_name:
+                  type: string
       responses:
         "200":
-          description: Dự án vừa được tạo
+          description: Thông tin dự án và danh sách phân khu
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Project"
-
-  /projects/{project_id}:
-    get:
-      summary: Lấy thông tin chi tiết của một dự án
-      operationId: getProjectById
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Thông tin dự án
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Project"
+                type: object
+                properties:
+                  project:
+                    $ref: "#/components/schemas/Project"
+                  sectors:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Sector"
         "404":
-          description: Không tìm thấy dự án
+          description: Không tìm thấy dự án phù hợp
+        "500":
+          description: Lỗi hệ thống. Vui lòng thử lại sau.
 
   /sectors:
-    get:
-      summary: Lấy danh sách tất cả các phân khu (sector)
-      operationId: getSectors
-      responses:
-        "200":
-          description: Danh sách phân khu
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Sector"
     post:
-      summary: Tạo mới một phân khu
-      operationId: createSector
+      summary: Tra cứu phân khu thuộc dự án
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SectorCreate"
+              type: object
+              properties:
+                project_name:
+                  type: string
+                sector_name:
+                  type: string
       responses:
         "200":
-          description: Phân khu vừa được tạo
+          description: Thông tin phân khu và danh sách tháp thuộc phân khu
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Sector"
-
-  /sectors/{sector_id}:
-    get:
-      summary: Lấy thông tin chi tiết của một phân khu
-      operationId: getSectorById
-      parameters:
-        - name: sector_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Thông tin phân khu
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Sector"
+                type: object
+                properties:
+                  sector:
+                    $ref: "#/components/schemas/Sector"
+                  towers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tower"
         "404":
-          description: Không tìm thấy phân khu
+          description: Không tìm thấy phân khu trong dự án
+        "409":
+          description: Phân khu không thuộc dự án được chọn
+        "500":
+          description: Lỗi hệ thống. Vui lòng thử lại sau.
+
+  /towers:
+    post:
+      summary: Tra cứu tháp theo phân khu
+      description: Nhập tên phân khu và tên tháp (tuỳ chọn) để lấy danh sách tầng
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sector_name:
+                  type: string
+                tower_name:
+                  type: string
+      responses:
+        "200":
+          description: Thông tin tháp và danh sách tầng thuộc tháp đó
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tower:
+                    $ref: "#/components/schemas/Tower"
+                  floors:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Floor"
+        "404":
+          description: Không tìm thấy tháp trong phân khu này
+        "500":
+          description: Lỗi hệ thống. Vui lòng thử lại sau.
+
+  /floors:
+    post:
+      summary: Tra cứu tầng theo tháp
+      description: Nhập tên tháp để xem danh sách tầng, hoặc nhập tầng cụ thể để xem chi tiết
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tower_name:
+                  type: string
+                floor_number:
+                  type: string
+      responses:
+        "200":
+          description: Thông tin tầng và danh sách căn hộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  floor:
+                    $ref: "#/components/schemas/Floor"
+                  apartments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Apartment"
+        "404":
+          description: Không tìm thấy tầng trong tháp này
+        "500":
+          description: Lỗi hệ thống. Vui lòng thử lại sau.
+
+  /apartments:
+    post:
+      summary: Tra cứu căn hộ theo tầng
+      description: Nhập tên tháp và số tầng để lấy danh sách căn hộ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tower_name:
+                  type: string
+                floor_number:
+                  type: string
+                apartment_name:
+                  type: string
+      responses:
+        "200":
+          description: Thông tin căn hộ và dữ liệu định giá
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apartment:
+                    $ref: "#/components/schemas/Apartment"
+                  pricing:
+                    $ref: "#/components/schemas/PropertyPrice"
+        "404":
+          description: Không tìm thấy căn hộ trong tầng này
+        "500":
+          description: Lỗi hệ thống. Vui lòng thử lại sau.
+
+  /pricing:
+    post:
+      summary: Tra cứu giá căn hộ
+      description: Nhập thông tin căn hộ để lấy giá định giá chi tiết
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apartment_name:
+                  type: string
+                floor_number:
+                  type: string
+                tower_name:
+                  type: string
+                has_furniture:
+                  type: boolean
+      responses:
+        "200":
+          description: Thông tin chi tiết định giá và đặc điểm căn hộ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apartment:
+                    $ref: "#/components/schemas/Apartment"
+                  pricing:
+                    $ref: "#/components/schemas/PropertyPrice"
+        "404":
+          description: Không tìm thấy giá cho căn hộ này
+        "409":
+          description: Giá trị định giá không hợp lệ
+        "500":
+          description: Lỗi hệ thống. Vui lòng thử lại sau.
 
 components:
   schemas:
-    ProjectBase:
+    Project:
       type: object
       properties:
         project_name:
           type: string
-        description:
-          type: string
-          nullable: true
-        investor:
-          type: string
-          nullable: true
-        num_subzones:
-          type: integer
-          nullable: true
-        num_blocks:
-          type: integer
-          nullable: true
-        num_properties:
-          type: integer
-          nullable: true
-        start_date:
-          type: string
-          format: date
-          nullable: true
-        completion_date:
-          type: string
-          format: date
-          nullable: true
-        area:
-          type: number
-          format: decimal
-          nullable: true
-        land_sheet:
-          type: string
-          nullable: true
-        land_plot:
-          type: string
-          nullable: true
-        alley_faces:
-          type: integer
-          nullable: true
-        frontage_faces:
-          type: integer
-          nullable: true
-    ProjectCreate:
-      allOf:
-        - $ref: "#/components/schemas/ProjectBase"
-    Project:
-      allOf:
-        - $ref: "#/components/schemas/ProjectBase"
-        - type: object
-          properties:
-            project_id:
-              type: integer
+        
 
-    SectorBase:
+    Sector:
       type: object
       properties:
         sector_name:
           type: string
-        description:
+
+    Tower:
+      type: object
+      properties:
+        tower_name:
           type: string
-          nullable: true
-        num_building:
-          type: integer
-          nullable: true
-        sector_area:
+
+    Floor:
+      type: object
+      properties:
+        floor_number:
+          type: string 
+
+    Apartment:
+      type: object
+      properties:
+        apartment_name:
+          type: string
+
+    PropertyPrice:
+      type: object
+      properties:
+        appraised_value:
           type: number
-          format: decimal
-          nullable: true
-        project_id:
-          type: integer
-    SectorCreate:
-      allOf:
-        - $ref: "#/components/schemas/SectorBase"
-    Sector:
-      allOf:
-        - $ref: "#/components/schemas/SectorBase"
-        - type: object
-          properties:
-            sector_id:
-              type: integer
+          format: float
+        opening_price:
+          type: number
+          format: float
+        negotiable_price:
+          type: number
+          format: float
+        value_after_furnishing:
+          type: number
+          format: float
+        status:
+          type: string
+          
